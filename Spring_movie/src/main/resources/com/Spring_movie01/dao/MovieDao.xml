@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Spring_movie01.dao.MovieDao">
+	<!-- mapper : XML에서 mapper를 선언하여 dao를 호출해서 사용하는 방식. -->
+
+	<!-- namespace : 조회할 dao의 경로 / 해당 dao 명 명시 필수. -->
+
+	<select id="selectMovieList"
+		resultType="com.Spring_movie01.dto.MovieDto">
+		<!-- id : Dao에서 SELECT할 DAO이름명 -->
+		<!-- resultType : SELECT할 내용을 저장한 객체 필드 DTO의 경로 / DTO 명 명시 필수 예) com.Spring_movie01.dto.MovieDto -->
+
+		SELECT MVCODE, MVNAME, MVPD, MVACTOR, MVGENRE, MVAGE, MVTIME,
+		TO_CHAR(MVOPEN, 'YYYY-MM-DD') AS MVOPEN, MVPOSTER
+		FROM MOVIES
+		WHERE MVSTATE = 1
+		ORDER BY MVCODE
+		<!-- 사용할 해당 선언문 -->
+
+	</select>
+		<select id="selectMvCheck" resultType="int">
+		SELECT COUNT(*) 
+		FROM MOVIES 
+		WHERE MVNAME = #{mvname} AND TO_CHAR(MVOPEN,'YYYY.MM.DD') = #{mvopen}
+	</select>
+
+
+	<select id="selectMovieInfo" resultType="com.Spring_movie01.dto.MovieDto">
+	
+		SELECT MVCODE, MVNAME, MVPD, MVACTOR, MVGENRE, MVAGE, MVTIME,
+		TO_CHAR(MVOPEN, 'YYYY-MM-DD') AS MVOPEN, MVPOSTER
+		FROM MOVIES
+		WHERE MVCODE = #{mvcode}
+	
+	
+	
+	</select>
+	
+	
+	
+	
+	<select id="selectReserveMvList" resultType="com.Spring_movie01.dto.MovieDto">
+		SELECT *
+		FROM MOVIES
+		WHERE MVCODE IN ( SELECT SCMVCODE FROM SCHEDULES )
+		 AND MVSTATE = 1
+	
+	
+	</select>
+	
+	<select id="selectthList" resultType="com.Spring_movie01.dto.ThDto">
+		SELECT *
+		FROM THEATERS
+		WHERE THCODE IN (SELECT SCTHCODE FROM SCHEDULES WHERE SCMVCODE = #{mvcode} )
+		AND THSTATE = 1
+	</select>
+	
+	
+	<select id="getScDateList" resultType="com.Spring_movie01.dto.SchedulesDto">
+		SELECT TO_CHAR(SCDATE,'YYYY-MM-DD') AS SCDATE
+		FROM SCHEDULES
+		WHERE SCMVCODE = #{mvcode} AND SCTHCODE = #{thcode}
+		GROUP BY TO_CHAR(SCDATE,'YYYY-MM-DD')
+		ORDER BY SCDATE
+	</select>
+	
+	<select id="getScroomList" resultType="com.Spring_movie01.dto.SchedulesDto">
+	SELECT SCROOM, TO_CHAR(SCDATE,'HH24:MI') AS SCDATE
+	FROM SCHEDULES
+	WHERE SCMVCODE = #{mvcode} 
+	AND SCTHCODE = #{thcode} 
+	ORDER BY SCROOM, SCDATE
+	</select>
+	
+	
+	<select id="getMaxRecode" resultType="String">
+	
+	SELECT MAX(RECODE) FROM RESERVATION
+	
+	
+	</select>
+	
+	
+	<insert id="insertReservation">
+	INSERT INTO RESERVATION(RECODE, REMID, RESCTHCODE, RESCROOM, RESCDATE, REAMOUNT) 
+	VALUES(#{recode}, #{remid}, #{rescthcode}, #{rescroom}, TO_DATE(#{rescdate}, 'YYYY-MM-DD HH24:MI'), #{reamount})
+	</insert>
+	
+	<select id="selectReservationInfoList" resultType="com.Spring_movie01.dto.ReservationInfoDto">
+	SELECT MV.MVCODE, MV.MVNAME, MV.MVPOSTER, TH.THNAME, SC.SCROOM, RE.RESCDATE AS SCDATE, RE.RECODE, RE.REAMOUNT  
+	FROM RESERVATION RE, SCHEDULES SC, MOVIES MV, THEATERS TH
+	WHERE RE.RESCTHCODE = SC.SCTHCODE 
+    AND RE.RESCROOM = SC.SCROOM
+    AND RE.RESCDATE = SC.SCDATE
+    AND SC.SCMVCODE = MV.MVCODE
+    AND SC.SCTHCODE = TH.THCODE
+    AND RE.REMID = #{remid}
+	</select>
+	
+	
+	<select id="selectReserinfo" resultType="com.Spring_movie01.dto.ReservationInfoDto">
+	SELECT MV.MVCODE, MV.MVNAME, MV.MVPOSTER, 
+	TH.THNAME, SC.SCROOM, TO_CHAR(SC.SCDATE,'YYYY.MM.DD HH24:MI') AS SCDATE,
+	RE.RECODE, RE.REAMOUNT 
+	FROM RESERVATION RE, SCHEDULES SC, MOVIES MV, THEATERS TH
+	WHERE RE.RESCTHCODE = SC.SCTHCODE AND RE.RESCROOM = SC.SCROOM AND RE.RESCDATE = SC.SCDATE
+   	AND SC.SCMVCODE = MV.MVCODE
+   	AND SC.SCTHCODE = TH.THCODE
+   	AND RE.RECODE = #{recode}
+	</select>
+	
+	<delete id="deleteReservation">
+	DELETE FROM RESERVATION WHERE RECODE = #{recode}
+	</delete>
+	
+	<insert id="insertReview">
+	INSERT INTO REVIEW(RVRECODE, RVMID, RVMVCODE, RVCONTENTS, RVDATE, RVCOMMEND)
+	VALUES(#{rvrecode}, #{rvmid}, #{rvmvcode}, #{rvcontents}, SYSDATE, #{rvcommend})
+	</insert>
+	
+	<select id="selectReviewWriteCheck" resultType="String">
+		SELECT RVRECODE 
+		FROM REVIEW 
+		WHERE RVRECODE = #{recode}
+	</select>
+	
+	
+	<select id="selectReviewList" resultType="com.Spring_movie01.dto.ReviewDto">
+	SELECT RVRECODE, RVMID, RVMVCODE, RVCONTENTS, TO_CHAR(RVDATE,'YYYY-MM-DD HH24:MI') AS RVDATE, RVCOMMEND
+	FROM REVIEW
+	WHERE RVRECODE = #{rvrecode}
+	</select>
+	
+	<select id="ReviewList" resultType="com.Spring_movie01.dto.ReviewDto">
+	SELECT RVRECODE, RVMID, RVMVCODE, RVCONTENTS, TO_CHAR(RVDATE,'YYYY-MM-DD HH24:MI') AS RVDATE, RVCOMMEND, M.MPROFILE, M.MSTATE
+	FROM REVIEW RV, MEMBERS M
+	WHERE RV.RVMID = M.MID
+	AND RVMVCODE = #{rvmvcode}
+	</select>
+	
+	<select id="selectCountReservation" resultType="int">
+	SELECT COUNT(*)
+	FROM RESERVATION
+	</select>
+	
+	<select id="selectMvCountReservation" resultType="int">
+	SELECT COUNT(*)
+	FROM RESERVATION RE, SCHEDULES SC
+	WHERE RE.RESCTHCODE = SC.SCTHCODE AND RE.RESCROOM = SC.SCROOM AND RE.RESCDATE = SC.SCDATE
+	AND SCMVCODE = #{mvcode}
+	</select>
+	
+	
+	<select id="selectSearchList" resultType="com.Spring_movie01.dto.MovieDto">
+	SELECT MVCODE, MVNAME, MVPD, MVACTOR, MVGENRE, MVAGE,
+		   MVTIME, TO_CHAR(MVOPEN, 'YYYY-MM-DD') AS MVOPEN, MVPOSTER
+	FROM MOVIES 
+	WHERE MVNAME LIKE '%'||#{searchText}||'%'
+	<if test="checkWhere == 'schedule'">
+	<!-- checkWhere의 파라미터 가지고 확인한다. -->
+	<!-- CheckWhere 안에 schedule이라는 단어가 있으면 해당 select문을 추가 실행을 하고 단어가 없으면 기존 select문만 실행이된다. -->
+	AND MVCODE IN ( SELECT SCMVCODE FROM SCHEDULES WHERE SCDATE > SYSDATE )
+	</if>
+	
+	</select>
+	
+
+	
+	
+</mapper>
+
+	<!-- 
+	mapper : XML에서 mapper를 선언하여 dao를 호출해서 사용하는 방식. 
+		- 정해져 있지 않고 그때 그때 다르게 사용 할 수 있다. 
+		- @언어테이션에 비해 다양하게 사용이 가능 하다. 
+		( 예) for문, if문 같은 반복문 / 조건식을 사용할 수 있다.) 
+		
+	dao에서 Mybatis를 가지고 @언어테이션을 호출을 해서 사용 하는 방식 
+		- 언어테이션은 선언되있는 부분만 수행이 된다.
+		
+	 -->

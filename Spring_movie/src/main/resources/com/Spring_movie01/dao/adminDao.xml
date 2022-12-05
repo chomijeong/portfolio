@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Spring_movie01.dao.adminDao">
+
+<select id="selectMovieList" resultType="com.Spring_movie01.dto.MovieDto">
+SELECT MVCODE, MVNAME, MVGENRE, MVAGE, TO_CHAR(MVOPEN,'YYYY-MM-DD') AS MVOPEN, MVSTATE
+FROM MOVIES
+</select>
+
+<update id="updateMvState">
+UPDATE MOVIES
+SET MVSTATE = #{mvstate}
+WHERE MVCODE = #{mvcode}
+</update>
+
+<select id="selectMvInfo" resultType="com.Spring_movie01.dto.MovieDto">
+		SELECT MVCODE, MVNAME, MVPD, MVACTOR, MVGENRE, MVAGE, MVTIME, 
+		       TO_CHAR(MVOPEN,'YYYY-MM-DD') AS MVOPEN, MVPOSTER, MVSTATE 
+		FROM MOVIES 
+		WHERE MVCODE = #{mvcode}	
+	</select>
+	
+	<select id="selectTheaterList" resultType="com.Spring_movie01.dto.ThDto" >
+		SELECT THCODE, THNAME, THADDR, THTEL, THSTATE
+		FROM THEATERS
+		ORDER BY THCODE
+	</select>
+	
+	<update id="updateThState">
+		UPDATE THEATERS
+		SET THSTATE = #{thstate}
+		WHERE THCODE = #{thcode}
+	</update>
+	
+	<update id="updateThInfo">
+		UPDATE THEATERS
+		SET THNAME = #{thname}, THADDR = #{thaddr}, THTEL = #{thtel}
+		WHERE THCODE = #{thcode}
+	</update>
+	
+	
+	
+	
+	<select id="selectThInfo" resultType="com.Spring_movie01.dto.ThDto" >
+		SELECT THCODE, THNAME, THADDR, THTEL, THSTATE
+		FROM THEATERS
+		WHERE THCODE = #{thcode}
+	</select>	
+	
+	
+	<update id="updateMvInfo">
+		UPDATE MOVIES
+		SET MVPD =#{mvpd}, MVACTOR = #{mvactor}, MVGENRE = #{mvgenre} , MVAGE = #{mvage}, MVTIME = #{mvtime}, MVOPEN = #{mvopen}
+		WHERE MVCODE = #{mvcode}
+	
+	
+	</update>
+	
+	<select id="selectMovieListcode" resultType="com.Spring_movie01.dto.MovieDto" >
+		SELECT MVCODE, MVNAME
+		FROM MOVIES
+	</select>	
+	
+	
+	<select id="selectTheaterListname" resultType="com.Spring_movie01.dto.ThDto" >
+		SELECT THCODE, THNAME 
+		FROM THEATERS
+	</select>
+	
+	<select id="selectScRoomTime" resultType="com.Spring_movie01.dto.SchedulesDto">
+		SELECT SCROOM, TO_CHAR(SCDATE,'HH24:MI') AS SCDATE, MVNAME AS SCMVCODE
+		FROM SCHEDULES SC , MOVIES MV
+		WHERE SC.SCMVCODE = MV.MVCODE
+		      AND (SCTHCODE = #{thcode} AND TO_CHAR(SCDATE,'YYYY-MM-DD') = #{scdate})
+	</select>
+	
+	<insert id="insertSchedules">
+	INSERT INTO SCHEDULES(SCROOM, SCDATE, SCTHCODE, SCMVCODE)
+	VALUES(#{scroom}, TO_DATE(#{scdate},'YYYY-MM-DD HH24:MI'), #{scthcode}, #{scmvcode})
+	</insert>
+	
+	
+	<select id="selectMemberList" resultType="com.Spring_movie01.dto.MemberDto" >
+		SELECT MID, MNAME, MBIRTH, MEMAIL, MPROFILE, MSTATE
+		FROM MEMBERS
+	</select>	                                
+	
+	<update id="updateMemberState">
+	UPDATE MEMBERS
+	SET MSTATE = #{mstate}
+	WHERE MID = #{mid}
+	</update>
+	
+	
+	
+	
+	
+
+</mapper>
