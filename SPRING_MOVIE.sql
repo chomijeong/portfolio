@@ -1,0 +1,125 @@
+DROP TABLE MEMBERS;
+
+-- 회원 정보 테이블
+CREATE TABLE MEMBERS(
+    MID                 NVARCHAR2(10),                          -- 아이디
+    MPW                NVARCHAR2(10) NOT NULL,      -- 비밀번호
+    MNAME           NVARCHAR2(10) NOT NULL,       -- 이름
+    MBIRTH          DATE,                                             -- 생년월일
+    MEMAIL          NVARCHAR2(50),                           -- 이메일
+    MADDRESS      NVARCHAR2(100),                         --주소
+    MPROFILE       NVARCHAR2(100),                         -- 프로필이미지
+    MSTATE          NUMBER(1)                                     -- 회원상태
+
+);
+
+
+ALTER TABLE MEMBERS
+ADD CONSTRAINT PK_MID PRIMARY KEY (MID);
+
+
+--2. 영화 정보 테이블 (MOVIES)
+CREATE TABLE MOVIES(
+    MVCODE  NVARCHAR2(5),           -- 영화코드
+    MVNAME  NVARCHAR2(200),       -- 영화이름
+    MVPD    NVARCHAR2(20),            -- 영화감독
+    MVACTOR NVARCHAR2(200),      -- 배우
+    MVGENRE NVARCHAR2(50),        -- 장르
+    MVAGE   NVARCHAR2(20),           -- 연령
+    MVTIME  NVARCHAR2(20),          -- 시간
+    MVOPEN  DATE,                            -- 개봉일
+    MVPOSTER NVARCHAR2(100) 
+    
+);
+ALTER TABLE MOVIES
+ADD CONSTRAINT PK_MVCODE PRIMARY KEY(MVCODE);
+
+
+
+--3. 극장 정보 테이블(THEATERS)
+CREATE TABLE THEATERS(
+    THCODE NVARCHAR2(4),    -- 극장코드
+    THNAME NVARCHAR2(20),   -- 극장이름
+    THADDR NVARCHAR2(50),   -- 극장주소
+    THTEL  NVARCHAR2(15),    -- 극장전화번호
+    THSTATE NUMBER(1)
+);
+ALTER TABLE THEATERS
+ADD CONSTRAINT PK_THCODE PRIMARY KEY(THCODE);
+
+Insert into THEATERS (THCODE,THNAME,THADDR,THTEL) values ('TH01','CGV계양','인천광역시 계양구 작전동 899-1 메트로몰 8층','1544-1122');
+Insert into THEATERS (THCODE,THNAME,THADDR,THTEL) values ('TH02','CGV부평','인천 광역시 부평구 청천동 386번지 아이즈빌아울렛 2층','1544-1122');
+Insert into THEATERS (THCODE,THNAME,THADDR,THTEL) values ('TH03','CGV송도타임스페이스','인천광역시 연수구 송도동 8-21 A동 지하1층','1544-1122');
+Insert into THEATERS (THCODE,THNAME,THADDR,THTEL) values ('TH04','CGV연수역','인천광역시 연수구 청학동 496-4 8층','1544-1122');
+Insert into THEATERS (THCODE,THNAME,THADDR,THTEL) values ('TH05','CGV인천','인천광역시 남동구 구월동 1130번지 빌딩 4층','1544-1122');
+
+
+
+--4. 상영스케쥴 (SCHEDULES)
+CREATE TABLE SCHEDULES(
+    SCROOM NVARCHAR2(10),     -- 상영관
+    SCDATE DATE,              -- 날짜및시간
+    SCTHCODE NVARCHAR2(4),    -- 극장코드(FK)
+    SCMVCODE NVARCHAR2(5)     -- 영화코드(FK)
+);
+ALTER TABLE SCHEDULES
+ADD CONSTRAINT FK_SCTHCODE FOREIGN KEY(SCTHCODE) REFERENCES THEATERS(THCODE);
+ALTER TABLE SCHEDULES
+ADD CONSTRAINT FK_SCMVCODE FOREIGN KEY(SCMVCODE) REFERENCES MOVIES(MVCODE);
+ALTER TABLE SCHEDULES
+ADD CONSTRAINT PK_SCHEDULES PRIMARY KEY(SCROOM,SCDATE,SCTHCODE);
+
+
+
+-- 5. 예매정보 테이블 생성 (RESERVATION) RE 
+CREATE TABLE RESERVATION (
+    RECODE NVARCHAR2(4),      -- 예매코드 (PK) 
+    REMID NVARCHAR2(10),      -- 예매자아이디 (FK - MEMBERS MID)
+    RESCTHCODE NVARCHAR2(4),  -- 극장코드 
+    RESCROOM NVARCHAR2(10),   -- 상영관
+    RESCDATE DATE,            -- 날짜및시간  (FK)  SCHEDULES(SCTHCODE,SCROOM,SCDATE)
+    REAMOUNT NUMBER           -- 예매인원
+);
+
+ALTER TABLE RESERVATION
+ADD CONSTRAINT PK_RECODE PRIMARY KEY(RECODE);
+ALTER TABLE RESERVATION
+ADD CONSTRAINT FK_REMID FOREIGN KEY(REMID) REFERENCES MEMBERS(MID);
+ALTER TABLE RESERVATION
+ADD CONSTRAINT FK_RESERV FOREIGN KEY(RESCTHCODE,RESCROOM,RESCDATE) REFERENCES SCHEDULES(SCTHCODE,SCROOM,SCDATE);
+    
+  
+    
+COMMIT;
+
+-- 6. 관람평 테이블(REVIEW)
+--  예매코드 , 예매자 아이디 ,  영화코드 , 관람평내용 , 관람평작성일 , 추천/비추천
+
+CREATE TABLE REVIEW(
+    RVRECODE NVARCHAR2(4),                  -- 예매코드
+    RVMID NVARCHAR2(10),                        -- 아이디
+    RVMVCODE NVARCHAR2(5),                  -- 영화코드
+    RVCONTENTS NVARCHAR2(200),          -- 관람평
+    RVDATE DATE,                                        -- 작성일
+    RVCOMMEND NUMBER(1)                   -- 추천(1) / 비추천(0)
+
+);
+ALTER TABLE REVIEW
+ADD CONSTRAINT PK_RVRECODE PRIMARY KEY (RVRECODE);
+ALTER TABLE REVIEW
+ADD CONSTRAINT FK_RVRECODE FOREIGN KEY (RVRECODE)
+REFERENCES RESERVATION (RECODE);
+
+ALTER TABLE REVIEW
+ADD CONSTRAINT FK_RVMID FOREIGN KEY (RVMID)
+REFERENCES MEMBERS (MID);
+
+ALTER TABLE REVIEW
+ADD CONSTRAINT FK_RVMVCODE FOREIGN KEY (RVMVCODE)
+REFERENCES MOVIES (MVCODE);
+
+
+COMMIT;
+
+
+
